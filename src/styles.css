@@ -147,6 +147,20 @@ input:focus {
   color: var(--gold);
 }
 
+.brand {
+  min-width: 0;
+}
+
+.logo,
+.pill,
+.actions button {
+  white-space: nowrap;
+}
+
+.actions {
+  flex-shrink: 0;
+}
+
 /* hero */
 .hero {
   position: relative;
@@ -297,6 +311,17 @@ input:focus {
 .clan-score {
   margin-left: auto;
   font-family: var(--mono);
+}
+
+/* counts and scores never break across lines; only the clan name gets cut with an ellipsis */
+.clan-line > :not(.clan-name),
+.flat-card > * {
+  white-space: nowrap;
+}
+
+.flat-card > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bar {
@@ -592,6 +617,15 @@ input:focus {
 }
 
 @media (max-width: 760px) {
+  .topbar {
+    padding: 0 12px;
+  }
+
+  /* the board already shows the phase, so phones keep only the testnet tag */
+  .brand .pill:not(.warn) {
+    display: none;
+  }
+
   .hero {
     height: auto;
     min-height: 0;
@@ -599,7 +633,7 @@ input:focus {
 
   .hero-overlay {
     position: relative;
-    padding: 12px 16px 0;
+    padding: 72px 16px 0; /* clears the fixed 60px top bar */
   }
 
   .hero-title h1 {
