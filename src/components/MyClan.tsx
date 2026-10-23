@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { clanAbi } from "../abi";
 import { CLANS, TOKEN } from "../config";
@@ -10,7 +10,6 @@ export function MyClan({ state }: { state: ClanState }) {
   const { t, lang } = useI18n();
   const { address, isConnected } = useAccount();
   const me = useAccountState(address);
-  const [pick, setPick] = useState(1);
   const { writeContract, data: hash, isPending, reset } = useWriteContract();
   const receipt = useWaitForTransactionReceipt({ hash });
   useEffect(() => {
@@ -28,6 +27,7 @@ export function MyClan({ state }: { state: ClanState }) {
     args: [myClan?.leader ?? ZERO],
     query: { enabled: !!myClan },
   });
+  const assigned = useReadContract({ address: TOKEN, abi: clanAbi, functionName: "clanFor", args: [address ?? ZERO], query: { enabled: !!address } });
   const busy = isPending || receipt.isLoading;
   const canChallenge =
     !!myClan && me.isAgent && address !== undefined && myClan.leader.toLowerCase() !== address.toLowerCase() && me.scored > (leaderScored.data ?? 0n);
@@ -82,17 +82,15 @@ export function MyClan({ state }: { state: ClanState }) {
       {me.clan === 0 ? (
         state.graduated ? (
           <div className="join">
-            <div className="clan-pick">
-              {CLANS.map((c) => (
-                <button key={c.id} className={pick === c.id ? "picked" : "ghost"} style={{ ["--clan" as string]: c.color }} onClick={() => setPick(c.id)}>
-                  {clanName(state.clans[c.id - 1] ?? { id: c.id, name: "" }, lang)}
-                </button>
-              ))}
-            </div>
+            {assigned.data ? (
+              <b style={{ color: CLANS[assigned.data - 1]?.color }}>
+                {fmt(t.joinTo, { clan: clanName(state.clans[assigned.data - 1] ?? { id: assigned.data as 1 | 2 | 3, name: "" }, lang) })}
+              </b>
+            ) : null}
             <button
               className="primary"
               disabled={busy || me.balance < state.entryFee}
-              onClick={() => writeContract({ address: TOKEN, abi: clanAbi, functionName: "joinClan", args: [pick] })}
+              onClick={() => writeContract({ address: TOKEN, abi: clanAbi, functionName: "joinClan" })}
             >
               {busy ? t.pending : t.join}
             </button>

@@ -487,23 +487,6 @@ input:focus {
   color: var(--muted);
 }
 
-.clan-pick {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.clan-pick button {
-  --clan: #888;
-  border-color: color-mix(in srgb, var(--clan) 55%, transparent);
-  color: var(--clan);
-}
-
-.clan-pick button.picked {
-  background: color-mix(in srgb, var(--clan) 22%, transparent);
-  border-color: var(--clan);
-}
-
 .copy-block {
   border: 1px solid var(--line);
   border-radius: 12px;

@@ -22,7 +22,7 @@ On Vercel: framework preset **Vite**, build command `npm run build`, output dire
 
 | Variable        | Default                  | Meaning                                  |
 | --------------- | ------------------------ | ---------------------------------------- |
-| `VITE_CHAIN_ID` | `97`                     | `56` = BSC mainnet, `97` = BSC testnet   |
+| `VITE_CHAIN_ID` | `56`                     | `56` = BSC mainnet, `97` = BSC testnet   |
 | `VITE_TOKEN`    | per chain, `src/config.ts` | Overrides the token address            |
 | `VITE_REGISTRY` | per chain, `src/config.ts` | Overrides the Agent ID registry        |
 

@@ -29,7 +29,6 @@ function Copy({ text }: { text: string }) {
 export function AgentZone({ state }: { state: ClanState }) {
   const { t, lang } = useI18n();
   const [bnb, setBnb] = useState("0.05");
-  const [clan, setClan] = useState(1);
   const [buyer, setBuyer] = useState("");
   const [check, setCheck] = useState("");
 
@@ -51,13 +50,16 @@ export function AgentZone({ state }: { state: ClanState }) {
   });
   const [tokens, spent] = quote.data ?? [0n, 0n, 0n];
   const minTokens = (tokens * 95n) / 100n;
-  const data = encodeFunctionData({ abi: clanAbi, functionName: "buy", args: [clan, minTokens] });
-  const name = clanName(state.clans[clan - 1] ?? { id: clan as 1 | 2 | 3, name: "" }, lang);
+  const data = encodeFunctionData({ abi: clanAbi, functionName: "buy", args: [minTokens] });
+  // The clan is fixed by the wallet address, so it can be shown before the first buy.
+  const assigned = useReadContract({ address: TOKEN, abi: clanAbi, functionName: "clanFor", args: [from], query: { enabled: from !== ZERO } });
+  const clan = from !== ZERO ? assigned.data : undefined;
+  const name = clan ? clanName(state.clans[clan - 1] ?? { id: clan as 1 | 2 | 3, name: "" }, lang) : "";
 
   const prompt =
     lang === "zh"
-      ? `请用我的 Binance Agentic Wallet 在 BSC（chainId ${APP_CHAIN_ID}）上调用合约 ${TOKEN}（战团 CLAN）买入：函数 buy(uint8 clan, uint256 minTokens)，clan = ${clan}（${name}），minTokens = ${minTokens}，同时转入 ${bnb} BNB（value = ${value} wei）。inputData = ${data}。先用 contract-call preview 给我看结果，我确认后再执行。`
-      : `Use my Binance Agentic Wallet to call contract ${TOKEN} (CLAN) on BSC (chainId ${APP_CHAIN_ID}): buy(uint8 clan, uint256 minTokens) with clan = ${clan} (${name}), minTokens = ${minTokens}, sending ${bnb} BNB (value = ${value} wei). inputData = ${data}. Preview it with contract-call preview first and wait for my confirmation before executing.`;
+      ? `请用我的 Binance Agentic Wallet 在 BSC（chainId ${APP_CHAIN_ID}）上调用合约 ${TOKEN}（战团 CLAN）买入：函数 buy(uint256 minTokens)，minTokens = ${minTokens}，同时转入 ${bnb} BNB（value = ${value} wei）。inputData = ${data}。先用 contract-call preview 给我看结果，我确认后再执行。`
+      : `Use my Binance Agentic Wallet to call contract ${TOKEN} (CLAN) on BSC (chainId ${APP_CHAIN_ID}): buy(uint256 minTokens) with minTokens = ${minTokens}, sending ${bnb} BNB (value = ${value} wei). inputData = ${data}. Preview it with contract-call preview first and wait for my confirmation before executing.`;
   const command = `baw contract-call preview --binanceChainId ${APP_CHAIN_ID} --from ${isAddress(buyer) ? buyer : "<your-agent-wallet>"} --to ${TOKEN} --value ${value} --inputData ${data} --json`;
 
   const checkAddr = isAddress(check) ? check : undefined;
@@ -80,19 +82,13 @@ export function AgentZone({ state }: { state: ClanState }) {
             <input value={bnb} inputMode="decimal" onChange={(e) => setBnb(e.target.value.replace(/[^0-9.]/g, ""))} />
           </label>
           <label>
-            {t.chooseClan}
-            <div className="clan-pick">
-              {CLANS.map((c) => (
-                <button key={c.id} className={clan === c.id ? "picked" : "ghost"} style={{ ["--clan" as string]: c.color }} onClick={() => setClan(c.id)}>
-                  {clanName(state.clans[c.id - 1] ?? { id: c.id, name: "" }, lang)}
-                </button>
-              ))}
-            </div>
-          </label>
-          <label>
             {t.yourAgent}
             <input value={buyer} placeholder="0x…" onChange={(e) => setBuyer(e.target.value.trim())} />
           </label>
+          <div className="kv">
+            <span>{t.yourClanAuto}</span>
+            <b style={{ color: clan ? CLANS[clan - 1]?.color : undefined }}>{clan ? name : t.clanAfterAddress}</b>
+          </div>
           <div className="kv">
             <span>{t.youGet}</span>
             <b>{tokens > 0n ? `${fmtTokens(tokens, lang)} CLAN` : "—"}</b>
