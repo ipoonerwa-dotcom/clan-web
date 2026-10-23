@@ -83,6 +83,19 @@ export function AgentZone({ state }: { state: ClanState }) {
       : `Use my Binance Agentic Wallet to call contract ${TOKEN} (CLAN) on BSC (chainId ${APP_CHAIN_ID}): sell(uint256 amount, uint256 minBnb) with amount = ${sellWei}, minBnb = ${minBnb}, sending no BNB (value = 0). inputData = ${sellData}. Preview it with contract-call preview first and wait for my confirmation before executing.`;
   const sellCommand = `baw contract-call preview --binanceChainId ${APP_CHAIN_ID} --from ${isAddress(buyer) ? buyer : "<your-agent-wallet>"} --to ${TOKEN} --value 0 --inputData ${sellData} --json`;
 
+  // Instructions anyone can paste to their AI as they are: no address, no quote.
+  const quickBuy =
+    lang === "zh"
+      ? `用我的 Binance Agentic Wallet，在 BSC（chainId ${APP_CHAIN_ID}）调用合约 ${TOKEN}（战团 CLAN）的 buy(uint256 minTokens)，minTokens 填 0，同时转入 0.05 BNB（value = 50000000000000000 wei）。先 contract-call preview 给我看，确认后再 execute。`
+      : `Use my Binance Agentic Wallet to call buy(uint256 minTokens) on contract ${TOKEN} (CLAN) on BSC (chainId ${APP_CHAIN_ID}) with minTokens = 0, sending 0.05 BNB (value = 50000000000000000 wei). Preview it with contract-call preview first and wait for my confirmation before executing.`;
+  const quickSell =
+    lang === "zh"
+      ? `用我的 Binance Agentic Wallet，在 BSC（chainId ${APP_CHAIN_ID}）调用合约 ${TOKEN}（战团 CLAN）的 sell(uint256 amount, uint256 minBnb)：amount 填我持有的全部 CLAN（18 位精度），minBnb 填 0，不转 BNB。先 contract-call preview 给我看，确认后再 execute。`
+      : `Use my Binance Agentic Wallet to call sell(uint256 amount, uint256 minBnb) on contract ${TOKEN} (CLAN) on BSC (chainId ${APP_CHAIN_ID}): amount = all the CLAN I hold (18 decimals), minBnb = 0, sending no BNB. Preview it with contract-call preview first and wait for my confirmation before executing.`;
+  const zeroBuy = encodeFunctionData({ abi: clanAbi, functionName: "buy", args: [0n] });
+  const quickCmd = `baw contract-call preview --binanceChainId ${APP_CHAIN_ID} --from <${lang === "zh" ? "你的Agent钱包地址" : "your-agent-wallet"}> --to ${TOKEN} --value 50000000000000000 --inputData ${zeroBuy} --json
+baw contract-call execute --requestId <${lang === "zh" ? "预览返回的requestId" : "requestId-from-preview"}> --json`;
+
   const checkAddr = isAddress(check) ? check : undefined;
   const agent = useReadContract({ address: TOKEN, abi: clanAbi, functionName: "isAgent", args: [checkAddr ?? ZERO], query: { enabled: !!checkAddr } });
   const handle = useReadContract({ address: REGISTRY, abi: registryAbi, functionName: "handleOf", args: [checkAddr ?? ZERO], query: { enabled: !!checkAddr } });
@@ -96,6 +109,32 @@ export function AgentZone({ state }: { state: ClanState }) {
         <li>{t.step2}</li>
         <li>{t.step3}</li>
       </ol>
+      <h3 className="sub">{t.quickTitle}</h3>
+      <p className="muted small">{t.quickIntro}</p>
+      <div className="grid2">
+        <div className="copy-block">
+          <div className="copy-head">
+            <span>{t.quickBuy}</span>
+            <Copy text={quickBuy} />
+          </div>
+          <pre>{quickBuy}</pre>
+        </div>
+        <div className="copy-block">
+          <div className="copy-head">
+            <span>{t.quickSell}</span>
+            <Copy text={quickSell} />
+          </div>
+          <pre>{quickSell}</pre>
+        </div>
+      </div>
+      <div className="copy-block" style={{ marginTop: 12 }}>
+        <div className="copy-head">
+          <span>{t.quickCmd}</span>
+          <Copy text={quickCmd} />
+        </div>
+        <pre>{quickCmd}</pre>
+      </div>
+      <h3 className="sub">{t.genTitle}</h3>
       <div className="grid2">
         <div className="form">
           <label>
