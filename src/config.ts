@@ -30,3 +30,5 @@ export const CLANS = [
 
 export const GOLD = "#fbbf24";
 export const POLL_MS = 6000;
+
+export const X_URL = "https://x.com/AgentClanWar";

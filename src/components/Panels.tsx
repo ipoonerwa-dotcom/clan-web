@@ -1,5 +1,5 @@
 import { useAccount, useChainId, useConnect, useDisconnect, useSwitchChain } from "wagmi";
-import { APP_CHAIN_ID, EXPLORER, PANCAKE_SWAP_URL, TOKEN } from "../config";
+import { APP_CHAIN_ID, EXPLORER, PANCAKE_SWAP_URL, TOKEN, X_URL } from "../config";
 import { clanName, fmtBnb, fmtCountdown, fmtPrice, fmtTokens, shortAddr } from "../format";
 import type { ClanState } from "../hooks/useClanState";
 import { fmt, useI18n } from "../i18n";
@@ -20,6 +20,9 @@ export function TopBar({ state }: { state: ClanState }) {
         {APP_CHAIN_ID === 97 ? <span className="pill warn">Testnet</span> : null}
       </div>
       <div className="actions">
+        <a className="button ghost" href={X_URL} target="_blank" rel="noreferrer" aria-label="X @AgentClanWar" title="@AgentClanWar">
+          𝕏
+        </a>
         <button className="ghost" onClick={() => setLang(lang === "zh" ? "en" : "zh")}>
           {lang === "zh" ? "EN" : "中文"}
         </button>
@@ -198,6 +201,12 @@ export function Footer() {
         {t.contract}：
         <a href={`${EXPLORER}/address/${TOKEN}`} target="_blank" rel="noreferrer">
           {TOKEN}
+        </a>
+      </div>
+      <div>
+        X：
+        <a href={X_URL} target="_blank" rel="noreferrer">
+          @AgentClanWar
         </a>
       </div>
       <div className="muted small">{t.disclaimer}</div>
