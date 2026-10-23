@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CLAN banner</title>
+    <style>
+      html, body { margin: 0; background: #07050f; overflow: hidden; }
+      .banner { position: relative; width: 1500px; height: 500px; overflow: hidden; background: #07050f; }
+      .stage { position: absolute; inset: 0; }
+      .shade {
+        position: absolute; inset: 0; pointer-events: none;
+        background: linear-gradient(90deg, rgba(7,5,15,0.94) 0%, rgba(7,5,15,0.82) 30%, rgba(7,5,15,0) 52%);
+      }
+      .copy { position: absolute; left: 96px; top: 80px; color: #ece9ff; }
+      .kicker {
+        display: flex; align-items: center; gap: 10px;
+        font: 600 17px/1 Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 6px; color: #9b95c9;
+      }
+      .dot { width: 11px; height: 11px; border-radius: 50%; }
+      .title { margin-top: 16px; font: 700 120px/1 Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 8px; }
+      .title .usd { color: #fbbf24; text-shadow: 0 0 18px rgba(251, 191, 36, 0.5); }
+      .title .name {
+        background: linear-gradient(90deg, #22d3ee, #ff3ea5); -webkit-background-clip: text; background-clip: text; color: transparent;
+        filter: drop-shadow(0 0 18px rgba(34, 211, 238, 0.35));
+      }
+      .hook { margin-top: 20px; font: 700 32px/1 Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 1px; }
+      .hook b { color: #fbbf24; }
+      .sub { margin-top: 12px; font: 400 21px/1 Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 1px; color: #9b95c9; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./banner.tsx"></script>
+  </body>
+</html>

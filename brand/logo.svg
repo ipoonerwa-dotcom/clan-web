@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="44%" r="68%">
+      <stop offset="0" stop-color="#21175a"/>
+      <stop offset="0.55" stop-color="#0d0922"/>
+      <stop offset="1" stop-color="#05040b"/>
+    </radialGradient>
+    <linearGradient id="head" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#b4aee0"/>
+    </linearGradient>
+    <linearGradient id="visor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#17122e"/>
+      <stop offset="1" stop-color="#07050f"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff1b8"/>
+      <stop offset="0.45" stop-color="#fbbf24"/>
+      <stop offset="1" stop-color="#d97706"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="12" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="22" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1000" height="1000" fill="url(#bg)"/>
+
+  <!-- the three clans: one hexagon, each pair of edges in a clan colour -->
+  <g fill="none" stroke-width="30" stroke-linejoin="round" stroke-linecap="round" filter="url(#glow)">
+    <polyline points="205.6,700 205.6,360 500,190" stroke="#ff4d6d"/>
+    <polyline points="500,190 794.4,360 794.4,700" stroke="#22d3ee"/>
+    <polyline points="794.4,700 500,870 205.6,700" stroke="#a3e635"/>
+  </g>
+
+  <!-- the leader: a robot head with a crown -->
+  <g filter="url(#soft)">
+    <rect x="318" y="468" width="364" height="262" rx="112" fill="url(#head)"/>
+  </g>
+  <rect x="362" y="540" width="276" height="114" rx="57" fill="url(#visor)"/>
+  <g filter="url(#glow)">
+    <rect x="417" y="568" width="58" height="58" rx="15" fill="#22d3ee"/>
+    <rect x="525" y="568" width="58" height="58" rx="15" fill="#22d3ee"/>
+  </g>
+  <rect x="298" y="562" width="24" height="76" rx="12" fill="#ff4d6d"/>
+  <rect x="678" y="562" width="24" height="76" rx="12" fill="#a3e635"/>
+
+  <g filter="url(#glow)">
+    <polygon points="384,452 394,328 452,386 500,296 548,386 606,328 616,452" fill="url(#gold)"/>
+  </g>
+  <rect x="378" y="440" width="244" height="34" rx="10" fill="url(#gold)"/>
+  <circle cx="452" cy="414" r="17" fill="#ff4d6d"/>
+  <circle cx="500" cy="392" r="21" fill="#22d3ee"/>
+  <circle cx="548" cy="414" r="17" fill="#a3e635"/>
+</svg>

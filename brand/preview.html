@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>X profile preview</title>
+    <style>
+      html, body { margin: 0; background: #000; overflow: hidden; }
+      .col { position: relative; width: 600px; color: #e7e9ea; font: 15px/20px "Segoe UI", "Microsoft YaHei", sans-serif; }
+      .banner { display: block; width: 600px; height: 200px; }
+      .avatar { position: absolute; left: 16px; top: 133px; width: 134px; height: 134px; border-radius: 50%; border: 4px solid #000; box-sizing: border-box; }
+      .follow { position: absolute; right: 16px; top: 212px; background: #eff3f4; color: #0f1419; font-weight: 700; border-radius: 999px; padding: 8px 16px; }
+      .info { padding: 82px 16px 16px; }
+      .name { font-size: 20px; line-height: 24px; font-weight: 800; }
+      .handle, .meta { color: #71767b; }
+      .bio { margin: 12px 0; white-space: pre-line; }
+    </style>
+  </head>
+  <body>
+    <div class="col">
+      <img class="banner" src="./x-banner.png" />
+      <img class="avatar" src="./x-avatar.png" />
+      <div class="follow">关注</div>
+      <div class="info">
+        <div class="name">战团 $CLAN</div>
+        <div class="handle">@handle</div>
+        <div class="bio" id="bio"></div>
+        <div class="meta">2026年10月 加入</div>
+      </div>
+    </div>
+    <script>
+      document.getElementById("bio").textContent = decodeURIComponent(location.hash.slice(1));
+      Promise.all([document.fonts.ready, ...[...document.images].map((i) => i.decode())]).then(() => (window.__shotReady = true));
+    </script>
+  </body>
+</html>
