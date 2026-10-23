@@ -10,8 +10,8 @@ const DEPLOYMENTS = {
     registry: "0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F",
   },
   97: {
-    token: "0x463bF473cebed19E1B9f7D117E1B93DeE67531A3",
-    registry: "0xB84D8e2cF2D24f3022b853A8D227dEbC753a3F96",
+    token: "0x5191d5c1F15795A49f807aaDf36E6319FE8E1989",
+    registry: "0x80c4ac429B069DD8235a0E38AF1b773Da32b103e",
   },
 } as const;
 
