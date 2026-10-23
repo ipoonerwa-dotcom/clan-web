@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { encodeFunctionData, isAddress, parseEther } from "viem";
+import { encodeFunctionData, formatEther, isAddress, parseEther } from "viem";
 import { useReadContract } from "wagmi";
 import { clanAbi } from "../abi";
 import { APP_CHAIN_ID, CLANS, REGISTRY, TOKEN } from "../config";
@@ -62,6 +62,27 @@ export function AgentZone({ state }: { state: ClanState }) {
       : `Use my Binance Agentic Wallet to call contract ${TOKEN} (CLAN) on BSC (chainId ${APP_CHAIN_ID}): buy(uint256 minTokens) with minTokens = ${minTokens}, sending ${bnb} BNB (value = ${value} wei). inputData = ${data}. Preview it with contract-call preview first and wait for my confirmation before executing.`;
   const command = `baw contract-call preview --binanceChainId ${APP_CHAIN_ID} --from ${isAddress(buyer) ? buyer : "<your-agent-wallet>"} --to ${TOKEN} --value ${value} --inputData ${data} --json`;
 
+  // Selling back to the curve: amount in tokens, 5% slippage on the BNB out.
+  const [sellAmt, setSellAmt] = useState("");
+  const held = useReadContract({ address: TOKEN, abi: clanAbi, functionName: "balanceOf", args: [from], query: { enabled: from !== ZERO } });
+  const sellWei = useMemo(() => {
+    try {
+      const v = parseEther(sellAmt || "0");
+      return v > 0n ? v : 0n;
+    } catch {
+      return 0n;
+    }
+  }, [sellAmt]);
+  const sellQuote = useReadContract({ address: TOKEN, abi: clanAbi, functionName: "quoteSell", args: [sellWei], query: { enabled: sellWei > 0n } });
+  const bnbOut = sellQuote.data?.[0] ?? 0n;
+  const minBnb = (bnbOut * 95n) / 100n;
+  const sellData = encodeFunctionData({ abi: clanAbi, functionName: "sell", args: [sellWei, minBnb] });
+  const sellPrompt =
+    lang === "zh"
+      ? `请用我的 Binance Agentic Wallet 在 BSC（chainId ${APP_CHAIN_ID}）上调用合约 ${TOKEN}（战团 CLAN）卖出：函数 sell(uint256 amount, uint256 minBnb)，amount = ${sellWei}，minBnb = ${minBnb}，不转 BNB（value = 0）。inputData = ${sellData}。先用 contract-call preview 给我看结果，我确认后再执行。`
+      : `Use my Binance Agentic Wallet to call contract ${TOKEN} (CLAN) on BSC (chainId ${APP_CHAIN_ID}): sell(uint256 amount, uint256 minBnb) with amount = ${sellWei}, minBnb = ${minBnb}, sending no BNB (value = 0). inputData = ${sellData}. Preview it with contract-call preview first and wait for my confirmation before executing.`;
+  const sellCommand = `baw contract-call preview --binanceChainId ${APP_CHAIN_ID} --from ${isAddress(buyer) ? buyer : "<your-agent-wallet>"} --to ${TOKEN} --value 0 --inputData ${sellData} --json`;
+
   const checkAddr = isAddress(check) ? check : undefined;
   const agent = useReadContract({ address: TOKEN, abi: clanAbi, functionName: "isAgent", args: [checkAddr ?? ZERO], query: { enabled: !!checkAddr } });
   const handle = useReadContract({ address: REGISTRY, abi: registryAbi, functionName: "handleOf", args: [checkAddr ?? ZERO], query: { enabled: !!checkAddr } });
@@ -113,6 +134,47 @@ export function AgentZone({ state }: { state: ClanState }) {
               <Copy text={command} />
             </div>
             <pre>{command}</pre>
+          </div>
+        </div>
+      </div>
+      <h3 className="sub">{t.sellTitle}</h3>
+      <p className="muted small">{t.sellIntro}</p>
+      <div className="grid2">
+        <div className="form">
+          <label>
+            {t.sellAmount}
+            <div className="row-input">
+              <input value={sellAmt} inputMode="decimal" placeholder="0" onChange={(e) => setSellAmt(e.target.value.replace(/[^0-9.]/g, ""))} />
+              <button className="ghost small" disabled={!held.data} onClick={() => setSellAmt(formatEther(held.data ?? 0n))}>
+                {t.sellAll}
+              </button>
+            </div>
+          </label>
+          {from !== ZERO ? (
+            <div className="kv">
+              <span>{t.youHold}</span>
+              <b>{fmtTokens(held.data ?? 0n, lang)} CLAN</b>
+            </div>
+          ) : null}
+          <div className="kv">
+            <span>{t.youReceive}</span>
+            <b>{bnbOut > 0n ? `${fmtBnb(bnbOut, 6)} BNB` : "—"}</b>
+          </div>
+        </div>
+        <div className="form">
+          <div className="copy-block">
+            <div className="copy-head">
+              <span>{t.promptLabel}</span>
+              <Copy text={sellPrompt} />
+            </div>
+            <pre>{sellPrompt}</pre>
+          </div>
+          <div className="copy-block">
+            <div className="copy-head">
+              <span>{t.commandLabel}</span>
+              <Copy text={sellCommand} />
+            </div>
+            <pre>{sellCommand}</pre>
           </div>
         </div>
       </div>

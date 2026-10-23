@@ -515,6 +515,16 @@ input:focus {
   overflow: auto;
 }
 
+.sub {
+  margin: 26px 0 4px;
+  font-size: 17px;
+}
+
+.row-input {
+  display: flex;
+  gap: 8px;
+}
+
 .checker {
   margin-top: 18px;
   display: grid;
