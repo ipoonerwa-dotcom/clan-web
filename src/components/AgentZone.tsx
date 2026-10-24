@@ -25,6 +25,23 @@ function Copy({ text }: { text: string }) {
   );
 }
 
+/** One contract call written as to / value / data, which Binance's Bibi AI (or any agent) can run without
+    looking anything up, plus a one-line note on what it does. */
+function callText(lang: string, to: string, value: bigint, data: string, note: string): string {
+  const bnb = value > 0n ? (lang === "zh" ? `（即 ${formatEther(value)} BNB）` : ` (${formatEther(value)} BNB)`) : "";
+  return lang === "zh"
+    ? `请用我的 Agentic Wallet 在 BSC（chainId ${APP_CHAIN_ID}）发起一笔合约调用，不需要查代币余额：
+to：${to}
+value：${value}${bnb}
+data：${data}
+${note}。先给我看预览，我确认后再执行。`
+    : `Use my Agentic Wallet to send one contract call on BSC (chainId ${APP_CHAIN_ID}); no token balance lookup is needed:
+to: ${to}
+value: ${value}${bnb}
+data: ${data}
+${note}. Show me the preview first and execute only after I confirm.`;
+}
+
 /** Agents can't connect a browser wallet, so this builds the exact call for their AI to make. */
 export function AgentZone({ state }: { state: ClanState }) {
   const { t, lang } = useI18n();
@@ -56,10 +73,7 @@ export function AgentZone({ state }: { state: ClanState }) {
   const clan = from !== ZERO ? assigned.data : undefined;
   const name = clan ? clanName(state.clans[clan - 1] ?? { id: clan as 1 | 2 | 3, name: "" }, lang) : "";
 
-  const prompt =
-    lang === "zh"
-      ? `请用我的 Binance Agentic Wallet 在 BSC（chainId ${APP_CHAIN_ID}）上调用合约 ${TOKEN}（战团 CLAN）买入：函数 buy(uint256 minTokens)，minTokens = ${minTokens}，同时转入 ${bnb} BNB（value = ${value} wei）。inputData = ${data}。先用 contract-call preview 给我看结果，我确认后再执行。`
-      : `Use my Binance Agentic Wallet to call contract ${TOKEN} (CLAN) on BSC (chainId ${APP_CHAIN_ID}): buy(uint256 minTokens) with minTokens = ${minTokens}, sending ${bnb} BNB (value = ${value} wei). inputData = ${data}. Preview it with contract-call preview first and wait for my confirmation before executing.`;
+  const prompt = callText(lang, TOKEN, value, data, lang === "zh" ? `买入战团（CLAN），最少到手 ${fmtTokens(minTokens, lang)} 枚` : `Buy CLAN, at least ${fmtTokens(minTokens, lang)} tokens`);
   const command = `baw contract-call preview --binanceChainId ${APP_CHAIN_ID} --from ${isAddress(buyer) ? buyer : "<your-agent-wallet>"} --to ${TOKEN} --value ${value} --inputData ${data} --json`;
 
   // Selling back to the curve: amount in tokens, 5% slippage on the BNB out.
@@ -78,21 +92,14 @@ export function AgentZone({ state }: { state: ClanState }) {
   const minBnb = (bnbOut * 95n) / 100n;
   const sellData = encodeFunctionData({ abi: clanAbi, functionName: "sell", args: [sellWei, minBnb] });
   const sellPrompt =
-    lang === "zh"
-      ? `请用我的 Binance Agentic Wallet 在 BSC（chainId ${APP_CHAIN_ID}）上调用合约 ${TOKEN}（战团 CLAN）卖出：函数 sell(uint256 amount, uint256 minBnb)，amount = ${sellWei}，minBnb = ${minBnb}，不转 BNB（value = 0）。inputData = ${sellData}。先用 contract-call preview 给我看结果，我确认后再执行。`
-      : `Use my Binance Agentic Wallet to call contract ${TOKEN} (CLAN) on BSC (chainId ${APP_CHAIN_ID}): sell(uint256 amount, uint256 minBnb) with amount = ${sellWei}, minBnb = ${minBnb}, sending no BNB (value = 0). inputData = ${sellData}. Preview it with contract-call preview first and wait for my confirmation before executing.`;
+    sellWei > 0n && bnbOut > 0n
+      ? callText(lang, TOKEN, 0n, sellData, lang === "zh" ? `卖出 ${fmtTokens(sellWei, lang)} 枚战团（CLAN），预计到手约 ${fmtBnb(bnbOut, 6)} BNB，少于 ${fmtBnb(minBnb, 6)} BNB 就不成交` : `Sell ${fmtTokens(sellWei, lang)} CLAN for about ${fmtBnb(bnbOut, 6)} BNB; it fails below ${fmtBnb(minBnb, 6)} BNB`)
+      : t.sellNeedAmount;
   const sellCommand = `baw contract-call preview --binanceChainId ${APP_CHAIN_ID} --from ${isAddress(buyer) ? buyer : "<your-agent-wallet>"} --to ${TOKEN} --value 0 --inputData ${sellData} --json`;
 
-  // Instructions anyone can paste to their AI as they are: no address, no quote.
-  const quickBuy =
-    lang === "zh"
-      ? `用我的 Binance Agentic Wallet，在 BSC（chainId ${APP_CHAIN_ID}）调用合约 ${TOKEN}（战团 CLAN）的 buy(uint256 minTokens)，minTokens 填 0，同时转入 0.05 BNB（value = 50000000000000000 wei）。先 contract-call preview 给我看，确认后再 execute。`
-      : `Use my Binance Agentic Wallet to call buy(uint256 minTokens) on contract ${TOKEN} (CLAN) on BSC (chainId ${APP_CHAIN_ID}) with minTokens = 0, sending 0.05 BNB (value = 50000000000000000 wei). Preview it with contract-call preview first and wait for my confirmation before executing.`;
-  const quickSell =
-    lang === "zh"
-      ? `用我的 Binance Agentic Wallet，在 BSC（chainId ${APP_CHAIN_ID}）调用合约 ${TOKEN}（战团 CLAN）的 sell(uint256 amount, uint256 minBnb)：amount 填我持有的全部 CLAN（18 位精度），minBnb 填 0，不转 BNB。先 contract-call preview 给我看，确认后再 execute。`
-      : `Use my Binance Agentic Wallet to call sell(uint256 amount, uint256 minBnb) on contract ${TOKEN} (CLAN) on BSC (chainId ${APP_CHAIN_ID}): amount = all the CLAN I hold (18 decimals), minBnb = 0, sending no BNB. Preview it with contract-call preview first and wait for my confirmation before executing.`;
+  // Instructions anyone can paste as they are: no address, no quote.
   const zeroBuy = encodeFunctionData({ abi: clanAbi, functionName: "buy", args: [0n] });
+  const quickBuy = callText(lang, TOKEN, 50_000_000_000_000_000n, zeroBuy, lang === "zh" ? "买入 0.05 BNB 的战团（CLAN），不设防滑点" : "Buy CLAN with 0.05 BNB, no slippage limit");
   const quickCmd = `baw contract-call preview --binanceChainId ${APP_CHAIN_ID} --from <${lang === "zh" ? "你的Agent钱包地址" : "your-agent-wallet"}> --to ${TOKEN} --value 50000000000000000 --inputData ${zeroBuy} --json
 baw contract-call execute --requestId <${lang === "zh" ? "预览返回的requestId" : "requestId-from-preview"}> --json`;
 
@@ -122,9 +129,8 @@ baw contract-call execute --requestId <${lang === "zh" ? "预览返回的request
         <div className="copy-block">
           <div className="copy-head">
             <span>{t.quickSell}</span>
-            <Copy text={quickSell} />
           </div>
-          <pre>{quickSell}</pre>
+          <pre>{t.quickSellNote}</pre>
         </div>
       </div>
       <div className="copy-block" style={{ marginTop: 12 }}>
